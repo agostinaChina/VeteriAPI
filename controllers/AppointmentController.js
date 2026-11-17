@@ -58,6 +58,45 @@ class AppointmentController {
         }
     }
 
+    async update(req, res) {
+
+    try {
+
+        const id = req.params.id;
+
+        const { pet, veterinarian, date, time, reason, active } = req.body;
+
+        if (!pet || !veterinarian || !date || !time || !reason || active === undefined) {
+            return res.status(403).send('Faltan Parametros Obligatorios');
+        }
+
+      const appointment = await Appointment.findByIdAndUpdate(
+    id,
+    { pet, veterinarian, date, time, reason, active },
+    { new: true }
+);
+        if (!appointment) {
+            return res.status(404).json({
+                message: 'Turno no encontrado'
+            });
+        }
+
+        res.json({
+            message: 'success',
+            data: appointment
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            message: 'Error al actualizar el turno'
+        });
+
+    }
+}
+
     async delete(req, res) {
 
     try {
