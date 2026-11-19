@@ -32,12 +32,10 @@ const petSchema = new mongoose.Schema({
     },
 
     owner: {
-        type: String,
-        required: [true, 'El dueño es obligatorio'],
-        trim: true,
-        minlength: 3,
-        maxlength: 64
-    },
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'user',
+    required: [true, 'El dueño es obligatorio']
+},
 
     active: {
         type: Boolean,

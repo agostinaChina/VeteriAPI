@@ -3,15 +3,15 @@ import mongoose from 'mongoose';
 const appointmentSchema = new mongoose.Schema({
 
     pet: {
-        type: String,
-        required: [true, 'La mascota es obligatoria'],
-        trim: true
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'pet',
+        required: [true, 'La mascota es obligatoria']
     },
 
     veterinarian: {
-        type: String,
-        required: [true, 'El veterinario es obligatorio'],
-        trim: true
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'veterinarian',
+        required: [true, 'El veterinario es obligatorio']
     },
 
     date: {

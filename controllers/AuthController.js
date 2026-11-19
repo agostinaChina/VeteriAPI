@@ -82,7 +82,6 @@ class AuthController {
 
             }
 
-            // generamos el token
             const token = jwt.sign( payload, SECRET_KEY, { expiresIn: '1h'});
 
           res.json({

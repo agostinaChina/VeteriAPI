@@ -11,7 +11,7 @@ const controller = new AppointmentController();
 
 router.get('/', authMiddleware, controller.getAll);
 
-router.post('/', authMiddleware, roleMiddlware, controller.create);
+router.post('/', authMiddleware, controller.create);
 
 router.delete('/:id', authMiddleware, roleMiddlware, controller.delete);
 

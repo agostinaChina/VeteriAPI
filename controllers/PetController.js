@@ -1,3 +1,4 @@
+
 import Pet from "../models/Pets.js";
 
 class PetController {
@@ -9,6 +10,10 @@ class PetController {
         const { type, breed, name } = req.query;
 
         const filter = {};
+
+        if (req.user.role !== 'admin') {
+            filter.owner = req.user._id;
+        }
 
         if (type) {
             filter.type = type;
@@ -48,7 +53,7 @@ class PetController {
 
             const pet = await Pet.findById(id);
 
-            if (!pet) {
+            if (!pet || (req.user.role !== 'admin' && pet.owner.toString() !== req.user._id)) {
                 return res.status(404).json({
                     message: 'Mascota no encontrada'
                 });
@@ -96,6 +101,12 @@ class PetController {
         } catch (error) {
 
             console.error(error);
+
+            if (error.name === 'ValidationError') {
+                return res.status(400).json({
+                    message: error.message
+                });
+            }
 
             res.status(500).json({
                 message: 'Error al crear la mascota'

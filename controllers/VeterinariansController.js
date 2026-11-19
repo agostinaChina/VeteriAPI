@@ -1,96 +1,88 @@
-import Veterinarian from "../models/Veterinarians.js";
-import mongoose from 'mongoose';
 
+import Veterinarian from "../models/Veterinarians.js";
 
 class VeterinarianController {
-    async getAll(req, res){
+
+    async getAll(req, res) {
         try {
-            const veterinarians = await Veterinarian.find()
-            .populate('user', 'name email');
+            const filter = {};
+
+            if (req.user.role !== 'admin') {
+                filter.active = true;
+            }
+
+            const veterinarians = await Veterinarian.find(filter);
 
             res.json({
                 message: 'success',
                 data: veterinarians
-            })
+            });
 
         } catch (error) {
-            console.error(error)
+            console.error(error);
+
             res.status(500).json({
                 message: 'Error al obtener los veterinarios'
-            })
+            });
         }
     }
 
-    async getById(req, res){
+    async getById(req, res) {
         try {
             const vid = req.params.vid;
 
-            const veterinarian = await Veterinarian.findById(vid)
-            .populate('user', '-password');
+            const veterinarian = await Veterinarian.findById(vid);
 
-            if( !veterinarian){
+            if (!veterinarian) {
                 return res.status(404).json({
-                    message: 'Veterinario no encontrado',
-                    data: {}
-                })
+                    message: 'Veterinario no encontrado'
+                });
             }
 
             res.json({
                 message: 'success',
                 data: veterinarian
-            })
+            });
 
         } catch (error) {
-            console.error(error)
+            console.error(error);
+
             res.status(500).json({
                 message: 'Error al obtener el veterinario'
-            })
+            });
         }
     }
 
-    async create(req, res){
+    async create(req, res) {
         try {
-            const { name, user, specialty, license, active } = req.body;
+            const { name, specialty, license, active } = req.body;
 
-            if( !name || !user || !specialty || !license) {
+            if (!name || !specialty || !license) {
                 return res.status(400).json({
-                    message: 'Los campos name, user, specialty y license son obligatorios'
-                })
+                    message: 'Faltan parámetros obligatorios'
+                });
             }
 
-            if( typeof name != 'string' || !name.trim() ){
+            if (typeof name !== 'string' || typeof specialty !== 'string' || typeof license !== 'string') {
                 return res.status(400).json({
-                    message: 'El campo name debe ser un texto válido'
-                })
+                    message: 'Los datos ingresados no son válidos'
+                });
             }
 
-            if( !mongoose.isValidObjectId(user) ){
+            if (license.trim().length > 10) {
                 return res.status(400).json({
-                    message: 'El identificador del usuario no es válido'
-                })
+                    message: 'La matrícula no puede superar los 10 caracteres'
+                });
             }
 
-            if( typeof specialty != 'string' || !specialty.trim() ){
+            if (active !== undefined && typeof active !== 'boolean') {
                 return res.status(400).json({
-                    message: 'El campo specialty debe ser un texto válido'
-                })
-            }
-
-            if( typeof license != 'string' || !license.trim() ){
-                return res.status(400).json({
-                    message: 'El campo license debe ser un texto válido'
-                })
-            }
-
-            if( active !== undefined && typeof active != 'boolean'){
-                return res.status(400).json({
-                    message: 'El campo active debe ser un boolean'
-                })
+                    message: 'El estado activo debe ser verdadero o falso'
+                });
             }
 
             const veterinarian = await Veterinarian.create({
                 name: name.trim(),
-                user,
                 specialty: specialty.trim(),
                 license: license.trim(),
                 active
@@ -99,13 +91,20 @@ class VeterinarianController {
             res.status(201).json({
                 message: 'success',
                 data: veterinarian
-            })
+            });
 
         } catch (error) {
-            console.error(error)
+            console.error(error);
+
+            if (error.name === 'ValidationError') {
+                return res.status(400).json({
+                    message: error.message
+                });
+            }
+
             res.status(500).json({
                 message: 'Error al crear el veterinario'
-            })
+            });
         }
     }
 }

@@ -1,63 +1,87 @@
 import Appointment from "../models/Appointments.js";
+import Pet from "../models/Pets.js";
 
 class AppointmentController {
 
-    async getAll(req, res) {
+   async getAll(req, res) {
 
-        try {
+    try {
 
-            const appointments = await Appointment.find();
+        let appointments;
 
-            res.json({
-                message: 'success',
-                data: appointments
-            });
+       if (req.user.role === 'admin') {
+    appointments = await Appointment.find()
+        .populate('pet')
+        .populate('veterinarian');
+} else {
+    const pets = await Pet.find({ owner: req.user._id });
+    const petIds = pets.map(pet => pet._id.toString());
 
-        } catch (error) {
+    appointments = await Appointment.find({
+        pet: { $in: petIds }
+    })
+        .populate('pet')
+        .populate('veterinarian');
+}
 
-            console.error(error);
+        res.json({
+            message: 'success',
+            data: appointments
+        });
 
-            res.status(500).json({
-                message: 'Error al obtener los turnos'
-            });
+    } catch (error) {
 
-        }
+        console.error(error);
+
+        res.status(500).json({
+            message: 'Error al obtener los turnos'
+        });
+
     }
-
+}
     async create(req, res) {
 
-        try {
+    try {
 
-            const { pet, veterinarian, date, time, reason } = req.body;
+        const { pet, veterinarian, date, time, reason } = req.body;
 
-            if (!pet || !veterinarian || !date || !time || !reason) {
-                return res.status(403).send('Faltan Parametros Obligatorios');
-            }
-
-            const appointment = await Appointment.create({
-                pet,
-                veterinarian,
-                date,
-                time,
-                reason
-            });
-
-            res.json({
-                message: 'success',
-                data: appointment
-            });
-
-        } catch (error) {
-
-            console.error(error);
-
-            res.status(500).json({
-                message: 'Error al crear el turno'
-            });
-
+        if (!pet || !veterinarian || !date || !time || !reason) {
+            return res.status(403).send('Faltan Parametros Obligatorios');
         }
-    }
 
+        if (req.user.role !== 'admin') {
+            const mascota = await Pet.findById(pet);
+
+            if (!mascota || mascota.owner.toString() !== req.user._id) {
+                return res.status(403).json({
+                    message: 'No tenés permiso para solicitar un turno para esta mascota'
+                });
+            }
+        }
+
+        const appointment = await Appointment.create({
+            pet,
+            veterinarian,
+            date,
+            time,
+            reason
+        });
+
+        res.json({
+            message: 'success',
+            data: appointment
+        });
+
+    } catch (error) {
+
+        console.error(error);
+
+        res.status(500).json({
+            message: 'Error al crear el turno'
+        });
+
+    }
+}
     async update(req, res) {
 
     try {

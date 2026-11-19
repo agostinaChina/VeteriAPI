@@ -1,3 +1,4 @@
+
 import mongoose from "mongoose";
 
 const veterinarianSchema = new mongoose.Schema({
@@ -5,11 +6,6 @@ const veterinarianSchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true
-    },
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'user',
-        required: true
     },
     specialty: {
         type: String,
@@ -19,7 +15,8 @@ const veterinarianSchema = new mongoose.Schema({
     license: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        maxlength: [10, 'La matrícula no puede superar los 10 caracteres']
     },
     active: {
         type: Boolean,
@@ -28,4 +25,5 @@ const veterinarianSchema = new mongoose.Schema({
 });
 
 const Veterinarian = mongoose.model('veterinarian', veterinarianSchema);
+
 export default Veterinarian;

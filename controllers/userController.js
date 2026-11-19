@@ -164,6 +164,31 @@ if (!status) {
         }
     }
 
+
+async getMe(req, res) {
+    try {
+        const uid = req.user._id;
+        const user = await User.findById(uid).select('-password');
+
+        if (!user) {
+            return res.status(404).json({
+                message: 'Usuario no encontrado'
+            });
+        }
+
+        res.status(200).json({
+            message: 'success',
+            data: user
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            message: "Error al obtener el Perfil"
+        });
+    }
+}
+
 }
 
 export default UserController;

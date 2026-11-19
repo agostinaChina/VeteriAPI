@@ -7,9 +7,9 @@ const SECRET_KEY = process.env.SECRET_KEY;
 
 const roleMiddlware = (req, res, next) => {
     const role = req.user.role;
-    if( role != 'admin'){
+    if( role !== 'admin'){ // !=
         return res.status(403).json({
-            message: 'Acceso denegado'
+            message: 'Acceso denegado2'
         })
     }
 
@@ -18,4 +18,3 @@ const roleMiddlware = (req, res, next) => {
 }
 
 export default roleMiddlware;
-
